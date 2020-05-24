@@ -8,6 +8,7 @@ class CalcControler{
         this._operation = [0];
         this._oldOperation = [];
         this._currentDate;
+        this._isFirstOperation=true;
         this._displayCalcEl = document.querySelector("#display");
         this._dateEl = document.querySelector("#data");
         this._timeEl = document.querySelector("#hora");
@@ -39,15 +40,14 @@ class CalcControler{
                 case "/":
                 case "*":
                 case "x":
-                case "%":
                     this.addOperation(keyPress);
                     break;
-                case ".":
-                    this.addDot();
+                case '%':
+                    this.addDotOrPercent('%')
                     break;
-
+                case ".":
                 case ",":
-                    this.addDot();
+                    this.addDotOrPercent('.')
                     break;
 
                 case "=":
@@ -90,12 +90,14 @@ class CalcControler{
     clearAll(){
         this._operation=[0];
         this._oldOperation=[];
+        this._isFirstOperation=true;
     }
 
     clearEntry(){
         this._operation.pop();
         if(this._operation.length<1)
             this._operation=[0];
+        this._isFirstOperation=true;
     }
 
     setError(){
@@ -127,6 +129,16 @@ class CalcControler{
         this.calc();
     }
 
+    getNumberPercent(){
+        let numberPercent = null;
+        this._operation.forEach(element=>{
+            if(element.toString().includes('%'))
+                numberPercent=element.replace('%','');
+        })
+        return numberPercent;
+        
+    }
+
     calc(){
         if(this._operation.length==1){
             if(this._oldOperation.length<3)
@@ -138,37 +150,31 @@ class CalcControler{
             this.calcIncrement();
         }
         else{
-            let removed = this._operation.length>3? this._operation.pop(): null;
+            let numberPercent = this.getNumberPercent();
             if(this._operation[this._operator]=="x")
                 this._operation[this._operator]="*"; 
-            let result = eval(this._operation.join(""));
-            this._oldOperation = this._operation;
-            if(removed == "%"){
-                this._oldOperation.push(removed);
-                result/=100;
+            let equation = this._operation.join('');
+            if(numberPercent!=null){
+               equation=equation.replace(numberPercent.toString()+'%',(numberPercent/100).toString());
+               console.log('equation=',equation);
             }
+            let result = eval(equation);
+            this._oldOperation = this._operation;
             this._operation = [];
             this._operation.push(result);
         }      
-       
+        this._isFirstOperation=true;
     }
 
      
 
     addOperation(value){
-        
-        if(isNaN(this.getLastElement(this._operation))){
+        let lastOperation = this.getLastElement(this._operation).toString(); 
+        if(isNaN(lastOperation.replace('%',''))){
             //Last element is a String
             if(this.isOperator(value)==true){
-                if(this.getLastElement(this._operation)!="%")
-                this._operation[this._operation.length-1]=value;
-                else{
-                    if(this._operation.length==3)
-                    this.calc();
-                }       
-            }else if(isNaN(value)){
-                //is a porcent
-
+                //change a operator
+                this._operation[this._operation.length-1]=value;      
             }else{
                 //Add Number
                 this._operation.push(value);
@@ -180,51 +186,57 @@ class CalcControler{
                 if(this._operation.length==3){
                     this.calc();
                 }
+                //is a operator
                 this._operation.push(value);
                 
+            }else{
+                //is percent or a Number
+                this.setLastOperation(value);
             }
-            else if(isNaN(value)){
-                //is porcent
-                this._operation.push(value);
-            }
-            else{
-                //is a Number
-            this.setLastOperation(value);
-            }    
         }
+        this._isFirstOperation=false;
     }
 
     setLastOperation(value){
         let lastElement = this.getLastElement(this._operation).toString();
-        if(lastElement=="0" && value!='.')
-            lastElement=lastElement.replace('0','')
+        console.log('value==',value)
+        if(this._isFirstOperation==true && (value!='.' && value!='%')){
+            
+            lastElement='';
+            console.log('value in if', value)
+            /*because, if value is a dot and we do a replace
+            "lastElement" the display just give the  dot.*/ 
+        }
+           
         let newValue = lastElement + value.toString(); 
         this._operation.pop();
         this._operation.push(newValue);
     }
 
     getLastElement(array){
-        return array[array.length-1];
+        return array[array.length-1].toString();
     }
 
-    dotNotExist(){
+    operationNotExist(value){
         let lastElement = this.getLastElement(this._operation).toString();
-        return lastElement.includes('.')? false: true;
+        return lastElement.includes(value)? false: true;
     }
 
-    addDot(){
+    addDotOrPercent(value){
         let lastOperation = this.getLastElement(this._operation);
 
         if(this.isOperator(lastOperation)){
-            if(this.dotNotExist())
-            this._operation.push('0.');
+            if(this.operationNotExist(value))
+            this._operation.push('0'+value);
         }
         else{
-            if(this.dotNotExist())
-            this.setLastOperation('.')
+            if(this.operationNotExist(value))
+            this.setLastOperation(value)
         }
-        console.log(lastOperation);
+        this._isFirstOperation=false;
     }
+
+    
 
     execButton(textButton){
         switch(textButton){
@@ -249,10 +261,10 @@ class CalcControler{
                 break;
 
             case "porcento":
-                this.addOperation("%");
+                this.addDotOrPercent('%');
                 break;
             case "ponto":
-                this.addDot();
+                this.addDotOrPercent('.');
                 break;
             case "igual":
              this.calc();
