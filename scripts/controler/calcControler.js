@@ -8,7 +8,6 @@ class CalcControler{
         this._operation = [0];
         this._oldOperation = [];
         this._currentDate;
-        //El = Element(HTML)
         this._displayCalcEl = document.querySelector("#display");
         this._dateEl = document.querySelector("#data");
         this._timeEl = document.querySelector("#hora");
@@ -141,25 +140,35 @@ class CalcControler{
     }
 
     setLastOperation(value){
-        let newValue = this.getLastElement(this._operation).toString() + value.toString(); 
+        let lastElement = this.getLastElement(this._operation).toString();
+        if(lastElement=="0" && value!='.')
+            lastElement=lastElement.replace('0','')
+        let newValue = lastElement + value.toString(); 
         this._operation.pop();
-        this._operation.push(Number.parseFloat(newValue));
+        this._operation.push(newValue);
     }
 
     getLastElement(array){
         return array[array.length-1];
     }
 
+    dotNotExist(){
+        let lastElement = this.getLastElement(this._operation).toString();
+        return lastElement.includes('.')? false: true;
+    }
+
     addDot(){
-        let lastOpetation = this.getLastElement();
+        let lastOperation = this.getLastElement(this._operation);
 
-        if(this.isOperator(lastOpetation) || !lastOpetation){
-            this.pushOperation('0.');
-
-        }else{
-            this.setLastOperation();
+        if(this.isOperator(lastOperation)){
+            if(this.dotNotExist())
+            this._operation.push('0.');
         }
-        
+        else{
+            if(this.dotNotExist())
+            this.setLastOperation('.')
+        }
+        console.log(lastOperation);
     }
 
     execButton(textButton){
