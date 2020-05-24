@@ -13,6 +13,7 @@ class CalcControler{
         this._timeEl = document.querySelector("#hora");
         this.initialize();
         this.initButtonsEvents();
+        this.initKeyBoard();
     }
 
     initialize(){
@@ -23,7 +24,61 @@ class CalcControler{
     
     }
 
+    initKeyBoard(){
+        document.addEventListener('keyup',element=>{
+            let keyPress = element.key.toString();
+            switch(keyPress){
+                case "Escape":
+                    this.clearAll();
+                    break;
+                case "Backspace":
+                    this.clearEntry();
+                    break;
+                case "+":
+                case "-":
+                case "/":
+                case "*":
+                case "x":
+                case "%":
+                    this.addOperation(keyPress);
+                    break;
+                case ".":
+                    this.addDot();
+                    break;
 
+                case ",":
+                    this.addDot();
+                    break;
+
+                case "=":
+                 this.calc();
+                    break;
+
+                case "Enter":
+                 this.calc();
+                   break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(keyPress);
+                    break;
+
+                default:
+                    //when is a number
+                    this.setError();
+                    break;
+                
+            }
+            this.refreshDisplay();
+        });
+    }
 
     addEventListenerAll(element, events, fn){
         events.split(' ').forEach(event=>{
@@ -48,7 +103,7 @@ class CalcControler{
     }
 
     isOperator(value){
-       if(['+','-','x','/'].indexOf(value)>-1){
+       if(['+','-','x','/','*'].indexOf(value)>-1){
             return  true;
        }
        else
@@ -203,23 +258,23 @@ class CalcControler{
              this.calc();
                 break;
 
-            // case '0':
-            // case '1':
-            // case '2':
-            // case '3':
-            // case '4':
-            // case '5':
-            // case '6':
-            // case '7':
-            // case '8':
-            // case '9':
-            //     this.addOperation(parseInt(textButton));
-            //     break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                this.addOperation(textButton);
+                break;
+
 
             default:
-                //this.setError()
-                this.addOperation(parseFloat(textButton));
-                
+                //when is a number
+                this.setError();
                 break;
             
         }
