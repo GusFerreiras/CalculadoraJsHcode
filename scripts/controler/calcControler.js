@@ -1,10 +1,13 @@
 class CalcControler{
     constructor(){
+        this._audio=new Audio('click.mp3');
+        this._audioOnOff=false;
         this._numberOne = 0;
         this._operator = 1;
         this._numberTwo = 2;
         this._porcent = 3;
         this._locale = "pt-BR";
+
         this._operation = [0];
         this._oldOperation = [];
         this._currentDate;
@@ -15,6 +18,7 @@ class CalcControler{
         this.initialize();
         this.initButtonsEvents();
         this.initKeyBoard();
+
     }
 
     initialize(){
@@ -22,11 +26,53 @@ class CalcControler{
       setInterval(()=>{
         this.setDisplayDateTime();
       },1000)
-    
+      document.querySelectorAll('.btn-ac').forEach(btn=>{
+          btn.addEventListener('dblclick',element=>{
+              this.toggleAudio();
+          });
+      })
+
+    }
+
+    toggleAudio(){
+        this._audioOnOff= ! this._audioOnOff;
+    }
+
+    playAudio(){
+        if (this._audioOnOff==true){
+            this._audio.currentTime=0
+            this._audio.play();
+        }
+    }
+
+    copyToClipBoard(){
+        let input = document.createElement('input');
+
+        input.value = this.displayCalc;
+
+        document.body.appendChild(input);
+
+        input.select();
+
+        document.execCommand("Copy");
+
+        input.remove();
+
+        /*I created an input because this html ia a svg,  so that it saved the value of the display when a CTRL + C was made, however, we don't want it to appear so I used an "input.remove()".*/
+    }
+
+    pasteFromClipBoard(){
+        document.addEventListener('paste', element=>{
+            let text = element.clipboardData.getData('Text'); 
+
+           this.displayCalc=parseFloat(text);
+        });
     }
 
     initKeyBoard(){
+        
         document.addEventListener('keyup',element=>{
+            this.playAudio();
             let keyPress = element.key.toString();
             switch(keyPress){
                 case "Escape":
@@ -69,6 +115,9 @@ class CalcControler{
                 case '9':
                     this.addOperation(keyPress);
                     break;
+                case 'c':
+                    if(element.ctrlKey) this.copyToClipBoard();
+                    break;464464464464
 
                 default:
                     //when is a number
@@ -239,6 +288,7 @@ class CalcControler{
     
 
     execButton(textButton){
+        this.playAudio();
         switch(textButton){
             case "ac":
                 this.clearAll();
