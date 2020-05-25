@@ -207,10 +207,18 @@ class CalcControler{
                equation=equation.replace(numberPercent.toString()+'%',(numberPercent/100).toString());
                console.log('equation=',equation);
             }
-            let result = eval(equation);
+            let result;
+            try{
+                result = eval(equation);              
+            }
+            catch{
+                this.setError();
+                return;
+            }
             this._oldOperation = this._operation;
             this._operation = [];
             this._operation.push(result);
+           
         }      
         this._isFirstOperation=true;
     }
@@ -374,6 +382,13 @@ class CalcControler{
         return this._displayCalcEl.innerHTML;
     }
     set displayCalc(value){
+        if(value.toString().length > 10){
+            this.setError();
+            return;
+            //PS: after, create a methed that put a E of Error.
+        }
+            
+
         this._displayCalcEl.innerHTML = value;
     }
     
